@@ -59,21 +59,23 @@ async def test_current_parses_payload() -> None:
 
 @pytest.mark.asyncio
 async def test_forecast_buckets_days() -> None:
+    # Use timestamps that land squarely inside the same UTC day and the next.
     client = WeatherClient("dummy")
+    # 2023-11-14 10:00 UTC and +3h, +21h (straddles into 2023-11-15 07:00 UTC).
     payload = {
         "list": [
             {
-                "dt": 1_700_000_000,
+                "dt": 1_699_956_000,  # 2023-11-14 10:00 UTC
                 "main": {"temp": 10, "temp_min": 9, "temp_max": 11},
                 "weather": [{"description": "clouds", "icon": "03d"}],
             },
             {
-                "dt": 1_700_010_800,  # +3h
+                "dt": 1_699_966_800,  # 2023-11-14 13:00 UTC
                 "main": {"temp": 12, "temp_min": 11, "temp_max": 14},
                 "weather": [{"description": "clouds", "icon": "03d"}],
             },
             {
-                "dt": 1_700_086_400,  # next day
+                "dt": 1_700_038_800,  # 2023-11-15 09:00 UTC (next day)
                 "main": {"temp": 15, "temp_min": 13, "temp_max": 18},
                 "weather": [{"description": "sunny", "icon": "01d"}],
             },
@@ -82,9 +84,13 @@ async def test_forecast_buckets_days() -> None:
     with aioresponses() as mock:
         mock.get(re.compile(rf"^{re.escape(FORECAST_URL)}.*"), payload=payload)
         days = await client.forecast_daily(lat=51.5, lon=-0.12)
-    assert 1 <= len(days) <= 2
-    # first-day bucket should include the tmax of 14 and tmin of 9
-    assert days[0].tmin <= 9 and days[0].tmax >= 14
+    assert len(days) == 2
+    # day 1 aggregates the first two items → tmin=9, tmax=14
+    assert days[0].tmin == 9
+    assert days[0].tmax == 14
+    # day 2 has only the third item → tmin=13, tmax=18
+    assert days[1].tmin == 13
+    assert days[1].tmax == 18
     await client.close()
 
 

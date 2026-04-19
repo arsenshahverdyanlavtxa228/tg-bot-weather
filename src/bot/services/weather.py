@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 import aiohttp
@@ -138,7 +138,7 @@ class WeatherClient:
                 humidity=int(main.get("humidity", 0)),
                 wind_speed=float(wind.get("speed", 0.0)),
                 pressure=int(main.get("pressure", 0)),
-                observed_at=datetime.fromtimestamp(int(data.get("dt", 0))),
+                observed_at=datetime.fromtimestamp(int(data.get("dt", 0)), tz=UTC).replace(tzinfo=None),
             )
 
         return await self._cache.get_or_set(key, load)
@@ -161,7 +161,7 @@ def _bucket_forecast(data: dict[str, Any]) -> list[DailyForecast]:
     """Turn the 3-hour forecast list into up to 5 daily min/max buckets."""
     by_day: dict[date, dict[str, Any]] = {}
     for item in data.get("list") or []:
-        ts = datetime.fromtimestamp(int(item.get("dt", 0)))
+        ts = datetime.fromtimestamp(int(item.get("dt", 0)), tz=UTC).replace(tzinfo=None)
         day = ts.date()
         main = item.get("main") or {}
         weather = (item.get("weather") or [{}])[0]
