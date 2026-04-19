@@ -138,7 +138,9 @@ class WeatherClient:
                 humidity=int(main.get("humidity", 0)),
                 wind_speed=float(wind.get("speed", 0.0)),
                 pressure=int(main.get("pressure", 0)),
-                observed_at=datetime.fromtimestamp(int(data.get("dt", 0)), tz=UTC).replace(tzinfo=None),
+                observed_at=datetime.fromtimestamp(int(data.get("dt", 0)), tz=UTC).replace(
+                    tzinfo=None
+                ),
             )
 
         return await self._cache.get_or_set(key, load)
