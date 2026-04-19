@@ -1,0 +1,24 @@
+app = "tg-bot-weather"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DATABASE_URL = "sqlite+aiosqlite:////app/data/bot.db"
+  DEFAULT_LOCALE = "ru"
+  DEFAULT_UNITS = "metric"
+  LOG_LEVEL = "INFO"
+
+[[mounts]]
+  source = "bot_data"
+  destination = "/app/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[processes]
+  app = "python -m bot"

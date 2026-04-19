@@ -1,0 +1,24 @@
+services:
+  - type: worker
+    name: tg-bot-weather
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:////app/data/bot.db
+      - key: DEFAULT_LOCALE
+        value: ru
+      - key: DEFAULT_UNITS
+        value: metric
+      - key: LOG_LEVEL
+        value: INFO
+    disk:
+      name: bot-data
+      mountPath: /app/data
+      sizeGB: 1

@@ -1,0 +1,17 @@
+services:
+  bot:
+    build: .
+    image: tg-bot-weather:latest
+    container_name: tg-bot-weather
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/bot.db
+    volumes:
+      - ./data:/app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
